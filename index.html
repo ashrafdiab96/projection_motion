@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<!-- Start HTML -->
+<html>
+    <!-- Start head -->
+	<head>
+        <!-- Project title -->
+        <title>Projection Motion</title>
+        <!-- Project description -->
+		<meta name="description" content="Projection motion visualization and simulation" /> 
+		<!-- Search keywords -->
+        <meta name="keywords" content="projection motion, physics, visualization, simulation" /> 
+		<!-- Start the style -->
+        <style>
+            /* Import Cairo font from google fonts */
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200&display=swap');
+
+            /* Giv specific style for all elements */
+            * {
+                box-sizing: border-box;
+            }
+
+            /* Remove margin and paddinf of the page */
+            body,
+            html {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            /* Style the body */
+            body {
+                background-color: rgba(25, 1, 58, 1)
+            }
+
+            /* Style myCanv div (includes the canvas) */
+            .myCanv {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 5px;
+            }
+
+            /* Style the canvas */
+            .myCanv canvas {
+                border-radius: 20px;
+            }
+
+            /* Style controls div (includes inputs, data and buttons to control the projection) */
+            .controls {
+                background-color: rgb(77, 36, 135, 0.8);
+                padding: 10px;
+                width: 70%;
+                margin: auto;
+                border-radius: 25px;
+            }
+
+            /* Style data div (includes inputs and distances) */
+            .data {
+                display: flex;
+                flex-direction: row;
+            }
+
+            /* Style inps div (includes the inputs) */
+            .inps {
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                width: 50%;
+            }
+
+            /* Style the placeholders */
+            .inps input::placeholder {
+                font-family: 'Cairo', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                color: #000;
+            }
+
+            /* Style the two inputs */
+            #angle,
+            #vel {
+                outline: none;
+                border: none;
+                padding: 10px;
+                margin: 10px;
+                border-radius: 20px;
+            }
+
+            /* Style distances div (include the distance x and y) */
+            .distances {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 50%;
+                padding: 10px;
+                color: #fff;
+            }
+
+            /* Style the span which includes the distances */
+            .distances .distanceData {
+                margin-left: 25px;
+                padding: 6px;
+                margin: 10px;
+                border-radius: 20px;
+                font-size: 18px;
+                font-family: 'Cairo', sans-serif;
+                letter-spacing: 2px;
+            }
+
+            /* Style .btns div (includes two buttons) */
+            .btns {
+                display: flex;
+                justify-content: center;
+            }
+
+            /* Style the two buttons */
+            #starter,
+            #reset {
+                font-family: 'Cairo', sans-serif;
+                letter-spacing: 2px;
+                padding: 5px 25px;
+                text-transform: uppercase;
+                color: #fff;
+                border: none;
+                outline: none;
+                margin: 5px;
+                border-radius: 20px;
+                cursor: pointer;
+            }
+
+            /* Style start button */
+            #starter {
+                background-color: rgb(23, 160, 23);
+                box-shadow: 0 6px rgb(1, 107, 1);
+            }
+
+            /* Style start button on hover */
+            #starter:hover {
+                position: relative;
+                top: 2px;
+                box-shadow: 0 4px rgb(1, 107, 1);
+            }
+
+            /* Style start button on active */
+            #starter:active {
+                position: relative;
+                top: 4px;
+                box-shadow: 0 2px rgb(1, 107, 1);
+            }
+
+            /* Style reset button */
+            #reset {
+                background-color: rgb(190, 24, 24);
+                box-shadow: 0 6px rgb(136, 17, 17);
+            }
+
+            /* Style reset button on hover */
+            #reset:hover {
+                position: relative;
+                top: 2px;
+                box-shadow: 0 4px rgb(136, 17, 17);
+            }
+
+            /* Style reset button on active */
+            #reset:active {
+                position: relative;
+                top: 4px;
+                box-shadow: 0 2px rgb(136, 17, 17);
+            }
+        </style>
+        <!-- End the style -->
+	</head>
+    <!-- End head -->
+
+    <!-- Start body -->
+	<body>
+        <!-- Start wrap div (includes all items) -->
+        <div id="wrap">
+            <!-- Start myCanv div (includes canvas) -->
+            <div class="myCanv">
+                <canvas id="surface" width="800" height="400"></canvas> 
+            </div>
+            <!-- End myCanv div -->
+
+            <!-- Start controls div (includes inputs, distances and buttons) -->
+            <div class="controls">
+                <!-- Start data div (includes inputs and distances) -->
+                <div class="data">
+                    <!-- Start inps div (includes inputs) -->
+                    <div class="inps">
+                        <input name="angle" type="text" id="angle" value="" placeholder="Angle" />
+                        <input type="text" name="velocity" id="vel" value="" placeholder="Velocity" />
+                    </div>
+                    <!-- End inps div -->
+
+                    <!-- Start distances div (includes distances) -->
+                    <div class="distances">
+                        <span class="distanceData">Distance X: <span id="disX">50</span></span>
+                        <span class="distanceData">Distance Y: <span id="disY">300</span></span>
+                    </div>
+                    <!-- End distances div -->
+                </div>
+                <!-- End data div -->
+
+                <!-- Start btns div (includes buttons) -->
+                <div class="btns">
+                    <input type="button" id="starter" value="Start" onclick="start()" />
+                    <input type="button" id="reset" value="Reset" onclick="stop()" />
+                </div>
+                <!-- End btns div -->
+            </div>
+            <!-- End controls div -->
+
+            <!-- Start script (includes all JavaScript logic) -->
+            <script type="text/javascript">
+                /* Object to draw the ball */
+                let pro = {x: 50, y: 380, r: 15, v: 0, theta: 0};
+                /* Get canvas */
+                let canvas = document.getElementById('surface');
+                /* Get the thing onto which the drawing will be rendered */
+                let ctx = canvas.getContext('2d');
+                /* Get the span to write the distance from X-axis */
+                let disX = document.getElementById("disX");
+                /* Get the span to write the distance from Y-axis */
+                let disY = document.getElementById("disY");
+                /* Assume the distamce (velocity * time) */
+                let frameCount = 0;
+                /* Initial velocity in X-axis */
+                let v0x = pro.v * Math.cos(pro.theta * Math.PI/180);
+                /* Initial velocity in Y-axis */
+                let v0y = pro.v * Math.sin(pro.theta * Math.PI/180);
+                /* Assign ball distance from X-axis */
+                let startX = pro.x;
+                /* Assign ball distance from Y-axis */
+                let startY = pro.y;
+                /* Gravity */
+                let g = 9.8;
+
+                /* Method to draw the canvas and the ball and control the motion */
+                const startMotion = setInterval(() => {
+                    /* Save the entire state of the canvas */
+                    ctx.save();
+                    /* Give color to the rectangle */
+                    ctx.fillStyle = "rgba(87, 54, 185, .9)";
+                    /* Place the rectangle in (0, 0) and gives it a size of canvas width and height */
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    /* Restore the most recently saved canvas state */
+                    ctx.restore();
+                    /* Check if the ball inside the canvas */
+                    if (pro.y < canvas.height - pro.r && pro.x < canvas.width - pro.r) {
+                        /* Calculate the vertical motion */
+                        pro.y = startY - (v0y * frameCount - (1/2 * g * Math.pow(frameCount, 2)));
+                        /* Calculate the horizontal motion */
+                        pro.x = startX + v0x * frameCount;
+                        /* Calculate the distance from X-axis */
+                        let distanceX = pro.x.toFixed(0) - 50;
+                        /* Calculate the distance from Y-axis */
+                        let distanceY = canvas.height - pro.y.toFixed(0) - 20;
+                        /* Display the distance from X-axis */
+                        if (distanceX >= 0) {
+                            disX.innerHTML = distanceX;
+                        } else {
+                            disX.innerHTML = distanceX * -1;
+                        }
+                        /* Display the distance from the Y-axis */
+                        if (distanceY >= 0) {
+                            disY.innerHTML = distanceY
+                        } else {
+                            disY.innerHTML = 0;
+                        }
+                    }
+                    /* Save the entire state of the canvas */
+                    ctx.save();
+                    /* Start a new path by emptying the list of sub-path */
+                    ctx.beginPath();
+                    /* Give color to the ball */
+                    ctx.fillStyle = "rgba(255, 111, 0, 0.9)";
+                    /* Draw circle (x, y, radius, start angle, end angle, counterclockwise) */
+                    ctx.arc(pro.x, pro.y, pro.r, 0, Math.PI*2, true);
+                    /* Fill the ball */
+                    ctx.fill();
+                    /* Stroke the current path, (draw border around the ball) */
+                    ctx.stroke();
+                    /* Close the path */
+                    ctx.closePath();
+                    /* Restore the most recently saved canvas state */
+                    ctx.restore();
+                    /* Increment the distance by 0.1 every time unit */
+                    frameCount += 0.1;
+                }, 15);
+
+                /* method to start the projection motion */
+                const start = () => {
+                    /* The distance from X on start */
+                    pro.x = 50;
+                    /* The distance from Y on start */
+                    pro.y = 380;
+                    /* Get the velocity input */
+                    pro.v = document.getElementById('vel');
+                    /* Get the angle input */
+                    pro.theta = document.getElementById('angle');
+                    /* Set the distance by 0 in the start */
+                    frameCount = 0;
+                    let re = /^[0-9]+$/;
+                    /* Check if angle is empty, display alert */
+                    pro.theta.value === '' || pro.theta.value === null ? alert("Please, enter the angle!") : null;
+                    /* Check if velocity is empty, display alert */
+                    pro.v.value === '' || pro.v.value === null ? alert("Please, enter the velocity!") : null;
+                    /* Check if the inputs are not numbers, display alert */
+                    if (pro.v.value.match(re) && pro.theta.value.match(re)) {
+                        /* Calculate the initial velocity in X-axis */
+                        v0x = pro.v.value * Math.cos(pro.theta.value * Math.PI/180);
+                        /* Calculate the initial velocity in Y-axis */
+                        v0y = pro.v.value * Math.sin(pro.theta.value * Math.PI/180);
+                    } else {
+                        alert("The Velocity and the Angle must be numbers!");
+                        stop();
+                    }
+                };
+
+                /* Method to reset the operation */
+                const stop = () => {
+                    /* Return the ball in the initial place in X-axis */
+                    pro.x = 50;
+                    /* Return the ball in the initial place in Y-axis */
+                    pro.y = 385;
+                    /* Evacuation the velocity input */
+                    pro.v.value = '';
+                    /* Evacuation the angle input */
+                    pro.theta.value = '';
+                    /* Evacuation the distanceX */
+                    disX.innerHTML = 0;
+                    /* Evacuation the distanceX */
+                    disY.innerHTML = 0;
+                };
+            </script>
+            <!-- End script -->
+        </div>
+        <!-- End wrap div -->
+	</body>
+    <!-- End body -->
+</html>
+<!-- End HTML -->
