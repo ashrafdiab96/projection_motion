@@ -47,10 +47,12 @@
             /* Style controls div (includes inputs, data and buttons to control the projection) */
             .controls {
                 background-color: rgb(77, 36, 135, 0.8);
+		padding: 5px;
                 padding: 10px;
                 width: 70%;
                 margin: auto;
                 border-radius: 25px;
+		margin-bottom: 5px;
             }
 
             /* Style data div (includes inputs and distances) */
@@ -111,6 +113,7 @@
             .btns {
                 display: flex;
                 justify-content: center;
+		margin-bottom: 5px;
             }
 
             /* Style the two buttons */
@@ -166,6 +169,53 @@
                 position: relative;
                 top: 4px;
                 box-shadow: 0 2px rgb(136, 17, 17);
+            }
+	    
+	    /* make responsive design for mobiles and tablets */
+            @media screen and (max-width: 820px) {
+                .myCanv canvas {
+                    width: 650px;
+                }
+            }
+
+            @media screen and (max-width: 670px) {
+                .myCanv canvas {
+                    width: 90%;
+                    height: 300px;
+                }
+
+                .controls {
+                    width: 90%;
+                }
+            }
+
+            @media screen and (max-width: 450px) {
+                .controls {
+                    width: 90%;
+                }
+
+                .data {
+                    flex-direction: column;
+                    width: 100%;
+                }
+
+                .inps {
+                    width: 100%;
+                }
+                
+                .distances {
+                    align-items: flex-start;
+                    width: 100%;
+                    padding: 0;
+                }
+
+                .distances .distanceData {
+                    padding: 0px;
+                    margin: 7px 20px;
+                    font-size: 16px;
+                    font-family: 'Cairo', sans-serif;
+                    letter-spacing: 2px;
+                }
             }
         </style>
         <!-- End the style -->
